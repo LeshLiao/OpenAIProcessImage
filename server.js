@@ -23,7 +23,7 @@ app.post('/process-image', async (req, res) => {
     }
 
     const imageUrl = data.image;
-    const userPrompt = data.prompt || ''; 
+    const userPrompt = data.prompt || '';
 
     console.log(`Received userPrompt: ${userPrompt}`);
     console.log(`Received Image URL: ${imageUrl}`);
@@ -33,20 +33,20 @@ app.post('/process-image', async (req, res) => {
             model: 'gpt-4o',
             messages: [
                 {
-                    "role": "system",
-                    "content": ""
+                    role: "system",
+                    content: ""
                 },
                 {
-                    "role": "user",
-                    "content": [
+                    role: "user",
+                    content: [
                         {
-                            "type": "text",
-                            "text": `${userPrompt}`
+                            type: "text",
+                            text: `${userPrompt}`
                         },
                         {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": `${imageUrl}`
+                            type: "image_url",
+                            image_url: {
+                                url: `${imageUrl}`
                             }
                         }
                     ]
@@ -54,14 +54,35 @@ app.post('/process-image', async (req, res) => {
             ],
         });
 
-        const response = gptResponse.choices[0]?.message?.content;
+        let content = gptResponse.choices[0]?.message?.content || "";
 
-        res.json({ message: 'Image processed', response: response });
+        // Remove markdown code block formatting if present
+        const cleaned = content
+            .replace(/^```json\s*/, '')
+            .replace(/^```/, '')
+            .replace(/\n```$/, '')
+            .trim();
+
+        let jsonResponse;
+
+        try {
+            jsonResponse = JSON.parse(cleaned);
+        } catch (parseError) {
+            // Not valid JSON — return as string
+            jsonResponse = content;
+        }
+
+        res.json({
+            message: 'Image processed',
+            response: jsonResponse
+        });
 
     } catch (error) {
         console.error('Error processing image:', error);
         res.status(500).json({ error: 'Error processing image' });
     }
+
+
 });
 
 const PORT = 3000;
