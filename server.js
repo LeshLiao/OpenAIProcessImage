@@ -34,7 +34,7 @@ app.post('/process-image', async (req, res) => {
             messages: [
                 {
                     "role": "system",
-                    "content": "You are an AI that generates titles and tags for images. Always format the JSON response exactly as shown in the example."
+                    "content": ""
                 },
                 {
                     "role": "user",
